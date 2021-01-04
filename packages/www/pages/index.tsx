@@ -1,5 +1,6 @@
 import * as React from "react";
 import styled from "@emotion/styled";
+import { useQuery } from "react-query";
 
 import { Repo } from "../@types/graphql";
 import Card from "../components/card";
@@ -7,6 +8,7 @@ import Footer from "../components/footer";
 import Navbar from "../components/navbar";
 import { gridGap, maxWidth } from "../components/style-constants";
 import getQueryData from "../helpers/query-data";
+import getRepos from "../helpers/get-repos";
 
 interface Props {
   children: React.ReactNode;
@@ -17,16 +19,31 @@ interface Props {
 }
 
 function TrendsApp(props: Props) {
-  const { time, language, dark, repos } = props;
+  const { time: initTime, language: initLanguage, dark, repos } = props;
+
+  const [time, setTime] = React.useState(initTime);
+  const [language, setLanguage] = React.useState(initLanguage);
+
+  const { data } = useQuery(["repos", { language, time }], getRepos, {
+    initialData: repos,
+    // refetchOnWindowFocus: false,
+    refetchOnMount: false
+  });
 
   return (
     <Hero style={{ backgroundColor: dark ? "#303030" : "#f4f3f4" }}>
-      <Navbar time={time} language={language} dark={dark} />
+      <Navbar
+        time={time}
+        language={language}
+        setTime={setTime}
+        setLanguage={setLanguage}
+        dark={dark}
+      />
 
       <Container>
         <Row>
-          {repos.length > 0
-            ? repos.map((r, i) => <Card key={i} repo={r} dark={dark} />)
+          {data.length > 0
+            ? data.map((r, i) => <Card key={i} repo={r} dark={dark} />)
             : "Rate limit exceeded, try again in a moment"}
         </Row>
 
@@ -36,29 +53,20 @@ function TrendsApp(props: Props) {
   );
 }
 
-TrendsApp.getInitialProps = async function(ctx: any) {
-  const { query } = ctx;
-  const { language, time, dark } = getQueryData(query);
+export async function getServerSideProps({ query }: any) {
+  const { language = null, time = null, dark = null } = getQueryData(query);
 
-  const endpoint =
-    process.env.NODE_ENV === "production"
-      ? `https://${ctx.req.headers.host}`
-      : "http://localhost:2999";
-
-  const res = await fetch(
-    `${endpoint}/api/repos?language=${language}&time=${time}`
-  );
-
-  const data = await res.json();
-  const repos = await data.items;
+  const repos = await getRepos(language, time);
 
   return {
-    time,
-    language,
-    dark,
-    repos
+    props: {
+      time,
+      language,
+      dark,
+      repos
+    }
   };
-};
+}
 
 const Container = styled.div`
   display: flex;

@@ -11,9 +11,11 @@ interface Props {
   language: string;
   time: number;
   dark: boolean;
+  setTime: () => void;
+  setLanguage: () => void;
 }
 
-export default ({ language, time, dark }: Props) => {
+export default ({ language, time, dark, setTime, setLanguage }: Props) => {
   const hasTheme = Object.entries(languageOptions).find(
     ([_, value]) => value === language
   );
@@ -31,6 +33,9 @@ export default ({ language, time, dark }: Props) => {
             name="language"
             id="language"
             defaultValue={language}
+            onChange={e => {
+              setLanguage(e.target.value);
+            }}
           >
             {Object.entries(languageOptions).map(([key, value]) => (
               <option key={key} value={value}>
@@ -48,6 +53,9 @@ export default ({ language, time, dark }: Props) => {
             name="time"
             id="time"
             defaultValue={String(time)}
+            onChange={e => {
+              setTime(e.target.value);
+            }}
           >
             {Object.entries(timeOptions).map(([key, value]) => (
               <option key={key} value={value}>

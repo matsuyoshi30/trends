@@ -1,5 +1,5 @@
 import * as React from "react";
-import Document, { Html, Main } from "next/document";
+import Document, { Html, Main, Head, NextScript } from "next/document";
 import { Global, css } from "@emotion/core";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -58,16 +58,16 @@ export default class MyDocument extends Document {
             href="/static/favicon-16x16.png"
           />
           <link rel="manifest" href="/static/manifest.json" />
+
+          <Head />
         </head>
         <body>
           <Main />
 
-          <Script src={clientSideJS} />
+          <NextScript />
 
           {isProduction && (
             <>
-              <Script src={serviceWorkerRegistration} />
-
               <script
                 async={true}
                 src={
@@ -89,34 +89,6 @@ const Script = ({ src }) => {
     <script type="text/javascript" dangerouslySetInnerHTML={{ __html: src }} />
   );
 };
-
-const clientSideJS = `
-  document.addEventListener('DOMContentLoaded', event => {
-    const checkbox = document.querySelector('input[name=dark]')
-    document.querySelector('select[name=language]').addEventListener('change', submit)
-    document.querySelector('select[name=time]').addEventListener('change', submit)
-    checkbox.addEventListener('change', submit)
-
-    function submit () {
-      checkbox.value = checkbox.checked
-      document.tune.submit()
-    }
-  })
-`;
-
-const serviceWorkerRegistration = `
-  document.addEventListener('DOMContentLoaded', event => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/_next/static/service-worker.js', { scope: "/" }).then(registration => {
-          console.log('SW registered: ', registration)
-        }).catch(registrationError => {
-          console.log('SW registration failed: ', registrationError)
-        })
-      })
-    }
-  })
-`;
 
 const GA = `
   window.dataLayer = window.dataLayer || [];

@@ -2,7 +2,6 @@ const withOffline = require("next-offline");
 
 const nextConfig = {
   target: "serverless",
-  dontAutoRegisterSw: true,
   workboxOpts: {
     swDest: "static/service-worker.js",
     exclude: [/\.(?:js|json)$/],
